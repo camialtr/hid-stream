@@ -4,6 +4,7 @@ using nn.swkbd;
 using UnityEngine;
 using System.Text;
 using UnityEngine.UI;
+using Newtonsoft.Json;
 
 namespace Scenes
 {
@@ -12,6 +13,7 @@ namespace Scenes
         public Text uiText;
         public Text uiText2;
         bool isConnected = false;
+        DancerClient client;
         
         private void Start()
         {
@@ -23,6 +25,38 @@ namespace Scenes
 
         private void Update()
         {
+            //if (UnityEngine.Input.GetKeyDown(KeyCode.J))
+            //{
+            //    var currentIp = "192.168.1.3";
+            //    if (IPAddress.TryParse(currentIp, out var ip))
+            //    {
+            //        isConnected = true;
+            //        uiText2.text = $"Connecting to [{currentIp}]...";
+            //        client = new DancerClient();
+            //        client.Connect(currentIp, 14444);
+            //        uiText2.text = $"Connected to [{currentIp}]";
+            //        Debug.Log($"Connected to [{currentIp}].");
+            //    }
+            //    else
+            //    {
+            //        uiText2.text = $"Invalid IP address: {currentIp}";
+            //        return;
+            //    }
+            //}
+            //if (client is not null && client.Connected)
+            //{
+            //    var ndata = new NetworkData()
+            //    {
+            //        AccelX = Random.value,
+            //        AccelY = Random.value,
+            //        AccelZ = Random.value,
+            //        GyroX = Random.value,
+            //        GyroY = Random.value,
+            //        GyroZ = Random.value
+            //    };
+            //    Debug.Log($"Sending data: {JsonConvert.SerializeObject(ndata)}");
+            //    client.SendMessage(JsonConvert.SerializeObject(ndata));
+            //}
             if (!isConnected && UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton2))
             {
                 var stringBuilder = new StringBuilder();
@@ -35,6 +69,9 @@ namespace Scenes
                 {
                     isConnected = true;
                     uiText2.text = $"Connecting to [{currentIp}]...";
+                    client = new DancerClient();
+                    client.Connect(currentIp, 14444);
+                    uiText2.text = $"Connected to [{currentIp}]";
                 }
                 else
                 {
@@ -58,6 +95,20 @@ namespace Scenes
                     uiTextString += $"\n\nAcceleration: {acceleration.x}, {acceleration.y}, {acceleration.z}";
                     var angle = Controllers.Players[i].GetAngle();
                     uiTextString += $"\n\nAngle: {angle.x}, {angle.y}, {angle.z}";
+
+                    if (client.Connected)
+                    {
+                        var ndata = new NetworkData()
+                        {
+                            AccelX = acceleration.x,
+                            AccelY = acceleration.y,
+                            AccelZ = acceleration.z,
+                            GyroX = angle.x,
+                            GyroY = angle.y,
+                            GyroZ = angle.z
+                        };
+                        client.SendMessage(JsonConvert.SerializeObject(ndata));
+                    }
                     
                     uiText.text = uiTextString;
                 }
