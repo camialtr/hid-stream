@@ -1,6 +1,7 @@
 #if UNITY_SWITCH
 using System;
 using nn.hid;
+using nn.util;
 using UnityEngine;
 
 namespace Input
@@ -14,6 +15,7 @@ namespace Input
         private SixAxisSensorState _sixAxisSensorState;
         private readonly SixAxisSensorHandle[] _handle = new SixAxisSensorHandle[2];
         private Vector3 _currentAcceleration;
+        private Vector3 _currentAngle;
         private Vector3 _lastAcceleration;
         private int _handleCount;
         private int _duplicatedAccelerationCount;
@@ -47,7 +49,10 @@ namespace Input
             {
             }
 
-            _currentAcceleration = UpdateAcceleration();
+            var sixAxisSensor = UpdateSixAxisSensor();
+
+            _currentAcceleration = sixAxisSensor.Item1;
+            _currentAngle = sixAxisSensor.Item2;
         }
 
         private bool GetState(NpadStyle style)
@@ -76,13 +81,17 @@ namespace Input
             }
         }
 
-        private Vector3 UpdateAcceleration()
+        private (Vector3, Vector3, Vector3) UpdateSixAxisSensor()
         {
             for (var i = 0; i < _handleCount;)
             {
                 SixAxisSensor.GetState(ref _sixAxisSensorState, _handle[i]);
                 var acceleration = new Vector3(_sixAxisSensorState.acceleration.x, _sixAxisSensorState.acceleration.y,
                     _sixAxisSensorState.acceleration.z);
+                
+                var angle = new Vector3(_sixAxisSensorState.angle.x, _sixAxisSensorState.angle.y, _sixAxisSensorState.angle.z);
+
+                var angularVelocity = new Vector3(_sixAxisSensorState.angularVelocity.x, _sixAxisSensorState.angularVelocity.y, _sixAxisSensorState.angularVelocity.z);
 
                 if (_lastAcceleration != acceleration)
                 {
@@ -94,10 +103,10 @@ namespace Input
                     _duplicatedAccelerationCount++;
                 }
 
-                return acceleration;
+                return (acceleration, angle, angularVelocity);
             }
 
-            return Vector3.zero;
+            return (Vector3.zero, Vector3.zero, Vector3.zero);
         }
 
         public void Clear() => _npadState.Clear();
@@ -133,6 +142,8 @@ namespace Input
         public bool SetAsMaster(bool isMaster) => _isMaster = isMaster;
 
         public Vector3 GetAcceleration() => _currentAcceleration;
+        
+        public Vector3 GetAngle() => _currentAngle;
 
         private bool GetKeyCodeFromId(int joyLeft, int joyRight)
         {
@@ -152,9 +163,9 @@ namespace Input
             };
         }
 
-        public bool Undo() => GetKeyCodeFromId(12, 0);
+        public bool Undo() => GetKeyCodeFromId(12, 0); // Down or B
 
-        public bool Select() => GetKeyCodeFromId(13, 1);
+        public bool Select() => GetKeyCodeFromId(13, 1); // Right or A
 
         public bool Up()
         {
@@ -196,9 +207,9 @@ namespace Input
             };
         }
 
-        public bool CustomInteractionA() => GetKeyCodeFromId(14, 2);
+        public bool CustomInteractionA() => GetKeyCodeFromId(14, 2); // Left or Y
 
-        public bool CustomInteractionB() => GetKeyCodeFromId(15, 3);
+        public bool CustomInteractionB() => GetKeyCodeFromId(15, 3); // Up or X
     }
 }
 #endif

@@ -17,6 +17,8 @@ namespace Input
         public bool SetAsMaster(bool isMaster);
     
         public Vector3 GetAcceleration();
+        
+        public Vector3 GetAngle();
     
         public bool Undo();
 

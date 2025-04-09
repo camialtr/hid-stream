@@ -1,6 +1,8 @@
+using System.Net;
 using Input;
-using System;
+using nn.swkbd;
 using UnityEngine;
+using System.Text;
 using UnityEngine.UI;
 
 namespace Scenes
@@ -8,6 +10,8 @@ namespace Scenes
     public class Recorder : MonoBehaviour
     {
         public Text uiText;
+        public Text uiText2;
+        bool isConnected = false;
         
         private void Start()
         {
@@ -19,13 +23,44 @@ namespace Scenes
 
         private void Update()
         {
+            if (!isConnected && UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton2))
+            {
+                var stringBuilder = new StringBuilder();
+                var keyboardArg = new ShowKeyboardArg();
+                keyboardArg.keyboardConfig.keyboardMode = KeyboardMode.Alphabet;
+                Swkbd.Initialize(ref keyboardArg);
+                Swkbd.ShowKeyboard(stringBuilder, keyboardArg);
+                var currentIp = stringBuilder.ToString();
+                if (IPAddress.TryParse(currentIp, out var ip))
+                {
+                    isConnected = true;
+                    uiText2.text = $"Connecting to [{currentIp}]...";
+                }
+                else
+                {
+                    uiText2.text = $"Invalid IP address: {currentIp}";
+                    return;
+                }
+            }
+            
             for (var i = 0; i < Controllers.Players.Length; i++)
             {
                 Controllers.Players[i].Update();
 
                 IsPlayerConnectedAndAskingForControl(Controllers.Players[i]);
                 
-                if (Controllers.Players[i].IsMaster()) uiText.text = $"Joy-Con {i + 1} is set as the target controller";
+                if (Controllers.Players[i].IsMaster())
+                {
+                    var uiTextString = "";
+                    
+                    uiTextString += $"Joy-Con {i + 1} is set as the target controller";
+                    var acceleration = Controllers.Players[i].GetAcceleration();
+                    uiTextString += $"\n\nAcceleration: {acceleration.x}, {acceleration.y}, {acceleration.z}";
+                    var angle = Controllers.Players[i].GetAngle();
+                    uiTextString += $"\n\nAngle: {angle.x}, {angle.y}, {angle.z}";
+                    
+                    uiText.text = uiTextString;
+                }
                 
                 Controllers.Players[i].Clear();
             }
