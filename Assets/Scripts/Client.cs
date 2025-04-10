@@ -1,34 +1,28 @@
 using System;
+using UnityEngine;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net.Sockets;
-using UnityEngine;
 
-public class DancerClient
+public class Client
 {
-    private TcpClient _tcpClient;
-    private NetworkStream _networkStream;
-    private string _serverIp;
-    private int _serverPort;
+    private readonly TcpClient _tcpClient;
+    private readonly NetworkStream _networkStream;
 
     public bool Connected { get; private set; }
 
-    public void Connect(string serverIp, int serverPort)
+    public Client(string serverIp, int serverPort)
     {
-        _serverIp = serverIp;
-        _serverPort = serverPort;
-
         try
         {
             _tcpClient = new TcpClient();
-            _tcpClient.Connect(_serverIp, _serverPort);
+            _tcpClient.Connect(serverIp, serverPort);
             _networkStream = _tcpClient.GetStream();
             Connected = true;
-            //Console.WriteLine("Conectado ao servidor.");
         }
         catch (Exception ex)
         {
-            Debug.Log($"Erro ao conectar ao servidor: {ex.Message}");
+            
         }
     }
 

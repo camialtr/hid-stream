@@ -1,7 +1,6 @@
 #if UNITY_SWITCH
 using System;
 using nn.hid;
-using nn.util;
 using UnityEngine;
 
 namespace Input

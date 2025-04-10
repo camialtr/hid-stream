@@ -2,7 +2,7 @@
 {
     public static class Controllers
     {
-        public static bool Initialized { get; private set; } = false;
+        public static bool Initialized { get; private set; }
         public static IJoyController[] Players { get; private set; }
 
 #if UNITY_SWITCH
