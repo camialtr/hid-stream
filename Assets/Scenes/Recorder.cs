@@ -1,11 +1,9 @@
-using System.Net;
 using Input;
 using nn.swkbd;
+using System.Net;
 using UnityEngine;
 using System.Text;
 using UnityEngine.UI;
-using Newtonsoft.Json;
-using UnityEngine.Serialization;
 
 namespace Scenes
 {
@@ -42,7 +40,7 @@ namespace Scenes
                 var currentIp = stringBuilder.ToString();
                 string connectionInfoText;
 
-                if (IPAddress.TryParse(currentIp, out var ip))
+                if (IPAddress.TryParse(currentIp, out var _))
                 {
                     _currentIp = currentIp;
                     connectionInfoText = $"IP: {currentIp}";
@@ -106,23 +104,27 @@ namespace Scenes
                     var joyInfoText = string.Empty;
 
                     joyInfoText += $"Joy-Con {i + 1} is set as the target controller";
+                    
                     var acceleration = Controllers.Players[i].GetAcceleration();
-                    joyInfoText += $"\n\nAcceleration: {acceleration.x}, {acceleration.y}, {acceleration.z}";
+                    
+                    var accelX = $"{acceleration.x:F9}".PadRight(9, '0')[..9];
+                    var accelY = $"{acceleration.y:F9}".PadRight(9, '0')[..9];
+                    var accelZ = $"{acceleration.z:F9}".PadRight(9, '0')[..9];
+                    
                     var angle = Controllers.Players[i].GetAngle();
-                    joyInfoText += $"\n\nAngle: {angle.x:F9}, {angle.y:F9}, {angle.z:F9}";
+                    
+                    var angleX = $"{angle.x:F9}".PadRight(9, '0')[..9];
+                    var angleY = $"{angle.y:F9}".PadRight(9, '0')[..9];
+                    var angleZ = $"{angle.z:F9}".PadRight(9, '0')[..9];
+                    
+                    joyInfoText += $"\n\nAcceleration: {accelX}, {accelY}, {accelZ}";
+                    joyInfoText += $"\n\nAngle: {angleX}, {angleY}, {angleZ}";
 
                     if (_client is not null && _client.Connected)
                     {
-                        var ndata = new NetworkData()
-                        {
-                            AccelX = acceleration.x,
-                            AccelY = acceleration.y,
-                            AccelZ = acceleration.z,
-                            GyroX = angle.x,
-                            GyroY = angle.y,
-                            GyroZ = angle.z
-                        };
-                        _client.SendMessage(JsonConvert.SerializeObject(ndata));
+                        var rawData = $"{accelX}|{accelY}|{accelZ}|{angleX}|{angleY}|{angleZ}"; // Fixed length - 59
+                        
+                        _client.SendMessage(rawData);
                     }
 
                     joyInfo.text = joyInfoText;
